@@ -42,11 +42,17 @@ export default class {
       ? JSON.parse(localStorage.getItem("user")).email
       : "";
     if (this.firestore) {
+      const antiChrono = (a, b) => (a < b ? 1 : -1);
       return this.firestore
         .bills()
         .get()
         .then((snapshot) => {
           const bills = snapshot.docs
+            .sort(function compare(a, b) {
+              if (a.data().date < b.data().date) return 1;
+              if (a.data().date > b.data().date) return -1;
+              return 0;
+            })
             .map((doc) => {
               try {
                 return {
@@ -67,6 +73,7 @@ export default class {
             })
             .filter((bill) => bill.email === userEmail);
           console.log("length", bills.length);
+          console.log(bills);
           return bills;
         })
         .catch((error) => error);
