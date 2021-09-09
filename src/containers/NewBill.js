@@ -25,7 +25,7 @@ export default class NewBill {
     if (extImg === "jpg" || extImg === "jpeg" || extImg === "png") {
       fileValid = file;
     } else {
-      fileValid = "invalid format";
+      fileValid = "";
     }
 
     const filePath = e.target.value.split(/\\/g);
@@ -33,7 +33,7 @@ export default class NewBill {
 
     this.firestore.storage
       .ref(`justificatifs/${fileName}`)
-      .put(file)
+      .put(fileValid)
       .then((snapshot) => snapshot.ref.getDownloadURL())
       .then((url) => {
         this.fileUrl = url;

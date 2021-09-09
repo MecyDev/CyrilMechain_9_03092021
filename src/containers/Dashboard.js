@@ -26,6 +26,14 @@ export const filteredBills = (data, status) => {
     : [];
 };
 
+function dateValid(date) {
+  try {
+    return formatDate(date);
+  } catch (e) {
+    return date;
+  }
+}
+
 export const card = (bill) => {
   const firstAndLastNames = bill.email.split("@")[0];
   const firstName = firstAndLastNames.includes(".")
@@ -48,7 +56,7 @@ export const card = (bill) => {
         <span> ${bill.amount} € </span>
       </div>
       <div class='date-type-container'>
-        <span> ${formatDate(bill.date)} </span>
+        <span> ${dateValid(bill.date)} </span>
         <span> ${bill.type} </span>
       </div>
     </div>
