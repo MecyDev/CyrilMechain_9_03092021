@@ -104,17 +104,10 @@ export default class {
   };
 
   handleEditTicket(e, bill, bills) {
-    console.log(this.id + " this");
-    console.log(bill.id + " bill");
-
     if (this.counter === undefined || this.id !== bill.id) this.counter = 0;
     if (this.id === undefined || this.id !== bill.id) this.id = bill.id;
 
     if (this.counter % 2 === 0) {
-      console.log("=====");
-      console.log("if");
-      console.log(this.counter + " if Edit -- ouvre");
-      console.log("=====");
       bills.forEach((b) => {
         $(`#open-bill${b.id}`).css({ background: "#0D5AE5" });
       });
@@ -123,10 +116,6 @@ export default class {
       $(".vertical-navbar").css({ height: "150vh" });
       this.counter++;
     } else {
-      console.log("=====");
-      console.log("else");
-      console.log(this.counter + " else Edit -- ferme");
-      console.log("=====");
       $(`#open-bill${bill.id}`).css({ background: "#0D5AE5" });
 
       $(".dashboard-right-container div").html(`
@@ -164,7 +153,9 @@ export default class {
     if (this.counter === undefined || this.index !== index) this.counter = 0;
     if (this.index === undefined || this.index !== index) this.index = index;
 
-    if ($(`#status-bills-container${this.index}`).children().length > 0) {
+    const statusBilCont = `#status-bills-container${this.index}`;
+
+    if ($(statusBilCont).children().length > 0) {
       this.counter = 1;
     }
 
@@ -181,7 +172,7 @@ export default class {
     }
 
     bills.forEach((bill) => {
-      $(`#open-bill${bill.id}`).click((e) =>
+      $(`${statusBilCont} #open-bill${bill.id}`).click((e) =>
         this.handleEditTicket(e, bill, bills)
       );
     });
