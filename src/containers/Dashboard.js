@@ -113,7 +113,7 @@ export default class {
     if (this.counter % 2 === 0) {
       console.log("=====");
       console.log("if");
-      console.log(this.counter + " if Edit");
+      console.log(this.counter + " if Edit -- ouvre");
       console.log("=====");
       bills.forEach((b) => {
         $(`#open-bill${b.id}`).css({ background: "#0D5AE5" });
@@ -125,7 +125,7 @@ export default class {
     } else {
       console.log("=====");
       console.log("else");
-      console.log(this.counter + " else Edit");
+      console.log(this.counter + " else Edit -- ferme");
       console.log("=====");
       $(`#open-bill${bill.id}`).css({ background: "#0D5AE5" });
 
@@ -161,23 +161,23 @@ export default class {
   };
 
   handleShowTickets(e, bills, index) {
-    if (this.counter1 === undefined || this.index !== index) this.counter1 = 0;
+    if (this.counter === undefined || this.index !== index) this.counter = 0;
     if (this.index === undefined || this.index !== index) this.index = index;
 
     if ($(`#status-bills-container${this.index}`).children().length > 0) {
-      this.counter1 = 1;
+      this.counter = 1;
     }
 
-    if (this.counter1 % 2 === 0) {
+    if (this.counter % 2 === 0) {
       $(`#arrow-icon${this.index}`).css({ transform: "rotate(0deg)" });
       $(`#status-bills-container${this.index}`).html(
         cards(filteredBills(bills, getStatus(this.index)))
       );
-      this.counter1++;
+      this.counter++;
     } else {
       $(`#arrow-icon${this.index}`).css({ transform: "rotate(90deg)" });
       $(`#status-bills-container${this.index}`).html("");
-      this.counter1--;
+      this.counter--;
     }
 
     bills.forEach((bill) => {
