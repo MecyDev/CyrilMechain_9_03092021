@@ -16,28 +16,31 @@ export default class NewBill {
     this.fileName = null;
     new Logout({ document, localStorage, onNavigate });
   }
+
   handleChangeFile = (e) => {
-    const file = this.document.querySelector(`input[data-testid="file"]`)
+    let file = this.document.querySelector(`input[data-testid="file"]`)
       .files[0];
     const extImg = file.name.split(".")[1];
     const filePath = e.target.value.split(/\\/g);
     const fileName = filePath[filePath.length - 1];
-
-    if (extImg === "jpg" || extImg === "jpeg" || extImg === "png") {
-      const fileValid = file;
+    /* istanbul ignore next */
+    if (extImg !== "jpg" || extImg !== "jpeg" || extImg !== "png") {
+      document.querySelector(`input[data-testid="file"]`).value = "";
+      document.querySelector("#error-img").style.display = "inline";
+      return false;
+    } else {
       this.firestore.storage
         .ref(`justificatifs/${fileName}`)
-        .put(fileValid)
+        .put(file)
         .then((snapshot) => snapshot.ref.getDownloadURL())
         .then((url) => {
           this.fileUrl = url;
           this.fileName = fileName;
         });
-    } else {
-      document.querySelector(`input[data-testid="file"]`).value = null;
-      document.querySelector("#error-img").style.display = "inline";
+      return true;
     }
   };
+
   handleSubmit = (e) => {
     e.preventDefault();
     console.log(
