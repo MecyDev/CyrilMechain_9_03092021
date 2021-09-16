@@ -20,25 +20,23 @@ export default class NewBill {
     const file = this.document.querySelector(`input[data-testid="file"]`)
       .files[0];
     const extImg = file.name.split(".")[1];
-    let fileValid;
-
-    if (extImg === "jpg" || extImg === "jpeg" || extImg === "png") {
-      fileValid = file;
-    } else {
-      fileValid = "";
-    }
-
     const filePath = e.target.value.split(/\\/g);
     const fileName = filePath[filePath.length - 1];
 
-    this.firestore.storage
-      .ref(`justificatifs/${fileName}`)
-      .put(fileValid)
-      .then((snapshot) => snapshot.ref.getDownloadURL())
-      .then((url) => {
-        this.fileUrl = url;
-        this.fileName = fileName;
-      });
+    if (extImg === "jpg" || extImg === "jpeg" || extImg === "png") {
+      const fileValid = file;
+      this.firestore.storage
+        .ref(`justificatifs/${fileName}`)
+        .put(fileValid)
+        .then((snapshot) => snapshot.ref.getDownloadURL())
+        .then((url) => {
+          this.fileUrl = url;
+          this.fileName = fileName;
+        });
+    } else {
+      document.querySelector(`input[data-testid="file"]`).value = null;
+      document.querySelector("#error-img").style.display = "inline";
+    }
   };
   handleSubmit = (e) => {
     e.preventDefault();
@@ -65,11 +63,14 @@ export default class NewBill {
       fileName: this.fileName,
       status: "pending",
     };
-    this.createBill(bill);
-    this.onNavigate(ROUTES_PATH["Bills"]);
+    if (this.fileUrl !== null) {
+      this.createBill(bill);
+      this.onNavigate(ROUTES_PATH["Bills"]);
+    }
   };
 
   // not need to cover this function by tests
+  /* istanbul ignore next */
   createBill = (bill) => {
     if (this.firestore) {
       this.firestore

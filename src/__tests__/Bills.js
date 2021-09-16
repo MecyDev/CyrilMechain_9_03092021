@@ -46,7 +46,6 @@ describe("Given I am connected as an employee", () => {
       test("Then bill icon in vertical layout should be highlighted", () => {
         const html = BillsUI({ data: [] });
         document.body.innerHTML = html;
-
         expect(screen.getByTestId("icon-window")).toBeTruthy();
       });
 
@@ -113,7 +112,6 @@ describe("Given I am connected as an employee", () => {
           fireEvent.click(eye);
           expect(handleClickIconEye).toHaveBeenCalled();
           const modale = screen.getByTestId("modalFile");
-          console.log(modale);
           expect(modale).toBeTruthy();
         });
       });
