@@ -8,62 +8,57 @@ import { bills } from "../fixtures/bills.js";
 import Bills from "../containers/Bills.js";
 import { localStorageMock } from "../__mocks__/localStorage";
 import firebase from "../__mocks__/firebase";
-import VerticalLayout from "../views/VerticalLayout";
 import router from "../app/Router.js";
+import { ROUTES, ROUTES_PATH } from "../constants/routes";
+import Firestore from "../app/Firestore";
 
-const onNavigate = () => {
-  return;
+const onNavigate = (pathname) => {
+  document.body.innerHTML = ROUTES({
+    pathname,
+  });
 };
 
 Object.defineProperty(window, "localStorage", { value: localStorageMock });
 window.localStorage.setItem("user", JSON.stringify({ type: "Employee" }));
 
-Object.defineProperty(window, "location", {
-  value: {
-    pathname: "/",
-    hash: "",
-  },
-});
-
-jest.mock("../containers/Bills.js", () => {
-  return jest.fn().mockImplementation(function () {
-    return {
-      getBills: async function () {
-        return [];
-      },
-    };
-  });
-});
-
 describe("Given I am connected as an employee", () => {
   describe("When I am on Bills Page", () => {
     describe("When I am on bill page but it's loading", () => {
       test("Then, Loading page should be rendered", () => {
-        document.body.innerHTML = BillsUI({ loading: true });
+        document.body.innerHTML = BillsUI({ data: [], loading: true });
         expect(screen.getAllByText("Loading...")).toBeTruthy();
       });
     });
     describe("When I am on bill page and error", () => {
       test("Then error page should be rendered", () => {
-        document.body.innerHTML = BillsUI({ error: "oops an error" });
+        document.body.innerHTML = BillsUI({
+          data: [],
+          loading: false,
+          error: "error",
+        });
         expect(screen.getAllByText("Erreur")).toBeTruthy();
       });
     });
 
     test("Then, bill icon in vertical layout should be highlighted", () => {
-      window.location.hash = "#employee/bills";
-      document.body.innerHTML = `<div id='root'></div>`;
+      jest.mock("../app/Firestore");
+      Firestore.bills = () => ({
+        bills,
+        get: jest.fn().mockResolvedValue(),
+      });
+      const pathname = ROUTES_PATH["Bills"];
+      Object.defineProperty(window, "location", {
+        value: { hash: pathname },
+      });
+      document.body.innerHTML = `<div id="root"></div>`;
       router();
       expect(
-        document
-          .getElementById("layout-icon1")
-          .classList.contains("active-icon")
+        screen.getByTestId("icon-window").classList.contains("active-icon")
       ).toBeTruthy();
     });
 
     test("Then bills should be ordered from earliest to latest", () => {
-      const html = BillsUI({ data: bills });
-      document.body.innerHTML = html;
+      document.body.innerHTML = BillsUI({ data: bills });
       const dates = screen
         .getAllByText(
           /^(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$/i
@@ -75,56 +70,59 @@ describe("Given I am connected as an employee", () => {
     });
 
     describe("When i click on new bill button", () => {
-      test("Then handleClickNewBill should be called", () => {
-        document.body.innerHTML = BillsUI({ data: bills });
-        const myBills = new Bills({
+      test("Then render the new bill page", () => {
+        document.body.innerHTML = BillsUI({ data: [] });
+        const bills = new Bills({
           document,
           onNavigate,
           firestore: null,
           localStorage: window.localStorage,
         });
-        myBills.handleClickNewBill = jest.fn();
-        screen
-          .getByTestId("btn-new-bill")
-          .addEventListener("click", myBills.handleClickNewBill);
-        fireEvent.click(screen.getByTestId("btn-new-bill"));
-        expect(myBills.handleClickNewBill).toBeCalled();
+        const handleClickNewBill = jest.fn(bills.handleClickNewBill);
+        const button = screen.getByTestId("btn-new-bill");
+        button.addEventListener("click", handleClickNewBill);
+        fireEvent.click(button);
+        expect(screen.getByTestId("new-bill").textContent).toEqual(
+          " Envoyer une note de frais "
+        );
       });
     });
 
     describe("When I click on the eye icon", () => {
       it("Should open the modal", () => {
         document.body.innerHTML = BillsUI({ data: bills });
-        const myBills = new Bills({
+        const billsT = new Bills({
           document,
           onNavigate,
           firestore: null,
           localStorage: window.localStorage,
         });
-        myBills.handleClickIconEye = jest.fn();
+        billsT.handleClickIconEye = jest.fn();
         screen
           .getAllByTestId("icon-eye")[0]
-          .addEventListener("click", myBills.handleClickIconEye);
+          .addEventListener("click", billsT.handleClickIconEye);
         fireEvent.click(screen.getAllByTestId("icon-eye")[0]);
-        expect(myBills.handleClickIconEye).toBeCalled();
+        expect(billsT.handleClickIconEye).toBeCalled();
       });
-
       it("And should display attached image", () => {
         document.body.innerHTML = BillsUI({ data: bills });
-        const myBills = new Bills({
+        const billsT = new Bills({
           document,
           onNavigate,
           firestore: null,
           localStorage: window.localStorage,
         });
+        $.fn.modal = jest.fn();
+        const icon = screen.getAllByTestId("icon-eye")[0];
+        const handleClickIconEye = jest.fn(() =>
+          billsT.handleClickIconEye(icon)
+        );
 
-        const handleClickIconEye = jest.fn(myBills.handleClickIconEye);
-        const eye = screen.getAllByTestId("icon-eye")[0];
-        eye.addEventListener("click", handleClickIconEye);
-        fireEvent.click(eye);
+        icon.addEventListener("click", handleClickIconEye);
+        fireEvent.click(icon);
         expect(handleClickIconEye).toHaveBeenCalled();
-        const modale = screen.getByTestId("modalFile");
-        expect(modale).toBeTruthy();
+        const modal = document.getElementById("modaleFile");
+        expect(modal).toBeTruthy();
       });
     });
   });
